@@ -9,3 +9,11 @@ WHERE outcome='Successful';
 ALTER TABLE successful_mission
 ADD primary key(mission_id);
 #3
+UPDATE successful_mission
+SET successful_mission.operator=REPLACE(TRIM(successful_mission.operator), ' ', '')
+WHERE operator IS NOT NULL;
+
+UPDATE moon_mission
+SET moon_mission.operator=REPLACE(TRIM(moon_mission.operator), ' ', '')
+WHERE operator IS NOT NULL;
+#4
