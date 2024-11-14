@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS book
 );
 CREATE TABLE IF NOT EXISTS city
 (
-    city_id   INT,
+    city_id   INT AUTO_INCREMENT,
     city_name VARCHAR(255),
     PRIMARY KEY (city_id)
 );
@@ -66,4 +66,13 @@ CREATE TABLE IF NOT EXISTS bookstore
     city_id        INT,
     PRIMARY KEY (bookstore_id),
     FOREIGN KEY (city_id) REFERENCES city (city_id)
+);
+CREATE TABLE IF NOT EXISTS inventory
+(
+    bookstore_id INT,
+    isbn INT,
+    amount_books_available INT,
+    FOREIGN KEY (bookstore_id) REFERENCES bookstore(bookstore_id),
+    FOREIGN KEY (isbn) REFERENCES book(isbn),
+    PRIMARY KEY (bookstore_id, isbn)
 );
