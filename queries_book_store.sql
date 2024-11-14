@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS city
     city_name VARCHAR(255),
     PRIMARY KEY (city_id)
 );
-CREATE TABLE IF NOT EXISTS bookstore
+CREATE TABLE IF NOT EXISTS books_store
 (
     bookstore_id   INT AUTO_INCREMENT,
     bookstore_name VARCHAR(255),
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS inventory
     bookstore_id INT,
     isbn VARCHAR(15),
     amount_books_available INT,
-    FOREIGN KEY (bookstore_id) REFERENCES bookstore(bookstore_id),
+    FOREIGN KEY (bookstore_id) REFERENCES books_store(bookstore_id),
     FOREIGN KEY (isbn) REFERENCES book(isbn),
     PRIMARY KEY (bookstore_id, isbn)
 );
@@ -116,3 +116,9 @@ VALUES ('Stockholm'),
        ('London'),
        ('Athens'),
        ('Manchester');
+
+INSERT INTO books_store (bookstore_name, city_id)
+VALUES ('Stockholm''s finest books', '1'),
+       ('London''s finest books', '2'),
+       ('Athens'' finest books', '3'),
+       ('Manchester''s finest books', '4');
