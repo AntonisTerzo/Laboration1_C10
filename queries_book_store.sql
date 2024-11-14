@@ -17,9 +17,6 @@ Tabell: ”inventory” I denna tabell vill vi ha 3 kolumner: store_id som koppl
 som kopplas mot böcker, samt amount som säger hur många exemplar det finns av en given bok i
 en viss butik. Som PK vill vi ha en kompositnyckel på kolumnerna store_id och ISBN.
  Lägg in ett par författare, böcker, butiker och lagersaldon för böcker som finns i de olika butikerna.
- Vy: ”total_author_book_value” Skapa sedan en vy som sammanställer data från tabellerna. Vyn ska innehålla följande 4 kolumner (med en rad per författare):
-”name” – Hela namnet på författaren. ”age” – Hur gammal författaren är.
-”book_title_count” – Hur många olika titlar vi har i ”Böcker” av den angivna författaren. ”inventory_value” – Totala värdet (pris) för författarens böcker i samtliga butiker.
  */
 
 DROP DATABASE IF EXISTS bookstore;
@@ -55,11 +52,11 @@ CREATE TABLE IF NOT EXISTS book
 CREATE TABLE IF NOT EXISTS price
 (
     price_id INT AUTO_INCREMENT,
-    isbn VARCHAR(15),
-    price DECIMAL (10, 2), -- precision for price
-    currency ENUM('EUR', 'USD', 'SEK'),
+    isbn     VARCHAR(15),
+    price    DECIMAL(10, 2), -- precision for price
+    currency ENUM ('EUR', 'USD', 'SEK'),
     PRIMARY KEY (price_id),
-    FOREIGN KEY (isbn) REFERENCES book(isbn)
+    FOREIGN KEY (isbn) REFERENCES book (isbn)
 );
 CREATE TABLE IF NOT EXISTS city
 (
@@ -77,11 +74,11 @@ CREATE TABLE IF NOT EXISTS books_store
 );
 CREATE TABLE IF NOT EXISTS inventory
 (
-    bookstore_id INT,
-    isbn VARCHAR(15),
+    bookstore_id           INT,
+    isbn                   VARCHAR(15),
     amount_books_available INT,
-    FOREIGN KEY (bookstore_id) REFERENCES books_store(bookstore_id),
-    FOREIGN KEY (isbn) REFERENCES book(isbn),
+    FOREIGN KEY (bookstore_id) REFERENCES books_store (bookstore_id),
+    FOREIGN KEY (isbn) REFERENCES book (isbn),
     PRIMARY KEY (bookstore_id, isbn)
 );
 
@@ -96,20 +93,20 @@ VALUES ('English'),
        ('Swedish');
 
 INSERT INTO book
-VALUES ('9780261102354', 'The Felloship of the Ring', '1', '1954-07-29', '1'),
-       ('9780008376130', 'The Two Towers', '1', '1954-11-11', '1'),
-       ('9780008537791', 'The Return of the King', '1', '1955-10-20', '1'),
-       ('9780552553209', 'Eragon', '1', '2003-08-26', '3'),
-       ('9781408855652', 'Harry Potter and the Philosophers Stone', '1', '1997-06-26', '2'),
-       ('9789602744017', 'Harry Potter and the Chamber of Secrets', '2', '1998-07-02', '2');
+VALUES ('9780261102354', 'The Felloship of the Ring', 1, '1954-07-29', 1),
+       ('9780008376130', 'The Two Towers', 1, '1954-11-11', 1),
+       ('9780008537791', 'The Return of the King', 1, '1955-10-20', 1),
+       ('9780552553209', 'Eragon', 1, '2003-08-26', '3'),
+       ('9781408855652', 'Harry Potter and the Philosophers Stone', 1, '1997-06-26', 2),
+       ('9789602744017', 'Harry Potter and the Chamber of Secrets', 2, '1998-07-02', 2);
 
 INSERT INTO price (isbn, price, currency)
-VALUES ('9780261102354', '21.19', 'USD'),
-       ('9780008376130', '31.99', 'EUR'),
-       ('9780008537791', '12.74', 'EUR'),
-       ('9780552553209', '22', 'EUR'),
-       ('9781408855652', '16.35', 'USD'),
-       ('9789602744017', '219', 'SEK');
+VALUES ('9780261102354', 21.19, 'USD'),
+       ('9780008376130', 31.99, 'EUR'),
+       ('9780008537791', 12.74, 'EUR'),
+       ('9780552553209', 22, 'USD'),
+       ('9781408855652', 16.35, 'EUR'),
+       ('9789602744017', 219, 'SEK');
 
 INSERT INTO city (city_name)
 VALUES ('Stockholm'),
@@ -118,7 +115,35 @@ VALUES ('Stockholm'),
        ('Manchester');
 
 INSERT INTO books_store (bookstore_name, city_id)
-VALUES ('Stockholm''s finest books', '1'),
-       ('London''s finest books', '2'),
-       ('Athens'' finest books', '3'),
-       ('Manchester''s finest books', '4');
+VALUES ('Stockholm''s finest books', 1),
+       ('London''s finest books', 2),
+       ('Athens'' finest books', 3),
+       ('Manchester''s finest books', 4);
+
+INSERT INTO inventory
+VALUES (1, '9780261102354', 2),
+       (2, '9780008376130', 1),
+       (3, '9780008537791', 4),
+       (4, '9780552553209', 3),
+       (4, '9781408855652', '5');
+/*
+ Vy: ”total_author_book_value” Skapa sedan en vy som sammanställer data från tabellerna.
+ Vyn ska innehålla följande 4 kolumner (med en rad per författare):
+”name” – Hela namnet på författaren. ”age” – Hur gammal författaren är.
+”book_title_count” – Hur många olika titlar vi har i ”Böcker” av den angivna författaren. ”inventory_value”
+ – Totala värdet (pris) för författarens böcker i samtliga butiker.
+*/
+
+CREATE VIEW total_author_book_value AS
+SELECT CONCAT(a.first_name, '', a.last_name)                              AS name,
+       TIMESTAMPDIFF(YEAR, a.birth_date, CURDATE())                       AS age,
+       COUNT(DISTINCT b.isbn)                                             AS book_title_count,
+       CONCAT(ROUND(SUM(p.price * i.amount_books_available), 2), ' euro') AS inventory_value -- didn't convert from usd/sek to euro
+FROM author a
+         LEFT JOIN book b ON a.author_id = b.author_id
+         LEFT JOIN price p ON b.isbn = p.isbn
+         LEFT JOIN inventory i on b.isbn = i.isbn
+GROUP BY a.first_name, a.last_name, a.birth_date;
+
+SELECT *
+FROM total_author_book_value;
