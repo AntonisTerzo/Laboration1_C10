@@ -43,15 +43,23 @@ CREATE TABLE IF NOT EXISTS language
 );
 CREATE TABLE IF NOT EXISTS book
 (
-    isbn             INT AUTO_INCREMENT,
+    isbn             VARCHAR(15),
     title            VARCHAR(255),
     language_id      INT,
-    price            INT,
     publication_date DATE,
     author_id        INT,
     PRIMARY KEY (isbn),
     FOREIGN KEY (author_id) REFERENCES author (author_id),
     FOREIGN KEY (language_id) REFERENCES language (language_id)
+);
+CREATE TABLE IF NOT EXISTS price
+(
+    price_id INT AUTO_INCREMENT,
+    isbn VARCHAR(15),
+    price DECIMAL (10, 2), -- precision for price
+    currency ENUM('EUR', 'USD', 'SEK'),
+    PRIMARY KEY (price_id),
+    FOREIGN KEY (isbn) REFERENCES book(isbn)
 );
 CREATE TABLE IF NOT EXISTS city
 (
@@ -70,9 +78,41 @@ CREATE TABLE IF NOT EXISTS bookstore
 CREATE TABLE IF NOT EXISTS inventory
 (
     bookstore_id INT,
-    isbn INT,
+    isbn VARCHAR(15),
     amount_books_available INT,
     FOREIGN KEY (bookstore_id) REFERENCES bookstore(bookstore_id),
     FOREIGN KEY (isbn) REFERENCES book(isbn),
     PRIMARY KEY (bookstore_id, isbn)
 );
+
+INSERT INTO author (first_name, last_name, birth_date)
+VALUES ('J. R. R.', 'Tolkien', '1892-01-03'),
+       ('J. K.', 'Rowling', '1965-07-31'),
+       ('Christopher', 'Paolini', '1983-11-17');
+
+INSERT INTO language (language_name)
+VALUES ('English'),
+       ('Greek'),
+       ('Swedish');
+
+INSERT INTO book
+VALUES ('9780261102354', 'The Felloship of the Ring', '1', '1954-07-29', '1'),
+       ('9780008376130', 'The Two Towers', '1', '1954-11-11', '1'),
+       ('9780008537791', 'The Return of the King', '1', '1955-10-20', '1'),
+       ('9780552553209', 'Eragon', '1', '2003-08-26', '3'),
+       ('9781408855652', 'Harry Potter and the Philosophers Stone', '1', '1997-06-26', '2'),
+       ('9789602744017', 'Harry Potter and the Chamber of Secrets', '2', '1998-07-02', '2');
+
+INSERT INTO price (isbn, price, currency)
+VALUES ('9780261102354', '21.19', 'USD'),
+       ('9780008376130', '31.99', 'EUR'),
+       ('9780008537791', '12.74', 'EUR'),
+       ('9780552553209', '22', 'EUR'),
+       ('9781408855652', '16.35', 'USD'),
+       ('9789602744017', '219', 'SEK');
+
+INSERT INTO city (city_name)
+VALUES ('Stockholm'),
+       ('London'),
+       ('Athens'),
+       ('Manchester');
